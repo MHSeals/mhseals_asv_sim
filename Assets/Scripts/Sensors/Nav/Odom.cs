@@ -5,7 +5,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
 namespace Sim.Sensors.Nav
 {
-    public class Odom : IROSSensor<OdometryMsg>
+    public class Odom : ROSSensorBase<OdometryMsg>
     {
         private Rigidbody odomBody;
 

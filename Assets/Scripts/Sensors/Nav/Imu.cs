@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector.ROSGeometry;
 
 namespace Sim.Sensors.Nav
 {
-    public class Imu : IROSSensor<ImuMsg>
+    public class Imu : ROSSensorBase<ImuMsg>
     {
         private Rigidbody imuBody;
 

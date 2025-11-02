@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Sim.Sensors.Lidar
 {
-    public class Lidar2D : IROSSensor<LaserScanMsg>
+    public class Lidar2D : ROSSensorBase<LaserScanMsg>
     {
         [SerializeField] private float minAngleDegrees = -45.0f;
         [SerializeField] private float maxAngleDegrees = 45.0f;

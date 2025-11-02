@@ -1,15 +1,18 @@
 using UnityEngine;
 using TMPro;
 
-public class showFPS : MonoBehaviour
+namespace Sim.UI
 {
-    [SerializeField] private TextMeshProUGUI fpsText;
-    private float deltaTime = 0.0f;
-
-    private void Update()
+    public class showFPS : MonoBehaviour
     {
-        deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
-        float fps = 1.0f / deltaTime;
-        fpsText.text = "FPS: " + Mathf.Ceil(fps).ToString();
+        [SerializeField] private TextMeshProUGUI fpsText;
+        private float deltaTime = 0.0f;
+
+        private void Update()
+        {
+            deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+            float fps = 1.0f / deltaTime;
+            fpsText.text = "FPS: " + Mathf.Ceil(fps).ToString();
+        }
     }
 }

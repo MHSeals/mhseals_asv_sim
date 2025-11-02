@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Sim.Sensors.Lidar
 {
-    public class Lidar3D : IROSSensor<PointCloud2Msg>
+    public class Lidar3D : ROSSensorBase<PointCloud2Msg>
     {
         [SerializeField, Range(0.1f, 200.0f)] private float maxRange = 100.0f;
         [SerializeField, Range(0, 5000)] private int numHorizontalBeams = 500;

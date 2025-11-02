@@ -6,7 +6,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 namespace Sim.Sensors.Vision
 {
     [RequireComponent(typeof(Camera))]
-    public class RosCameraAsync : IROSSensor<ImageMsg>
+    public class RosCameraAsync : ROSSensorBase<ImageMsg>
     {
         [SerializeField] private RenderTexture rgbRenderTexture;
         private Camera sensorCamera;

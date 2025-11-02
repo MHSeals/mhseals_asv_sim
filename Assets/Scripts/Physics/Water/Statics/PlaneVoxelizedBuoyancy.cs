@@ -7,6 +7,7 @@ using UnityEngine;
 using System.IO;
 using System;
 using TMPro;
+using Sim.Util;
 
 // This script is aimed at testing the buoyancy of a ship using a voxelized mesh
 // It does not support a dynamic water surface, but rather creates a plane

@@ -8,7 +8,7 @@ using UnityEngine.Rendering.HighDefinition;
 namespace Sim.Sensors.Vision
 {
     [RequireComponent(typeof(Camera))]
-    public class RosDepthCameraAsync : IROSSensor<ImageMsg>
+    public class RosDepthCameraAsync : ROSSensorBase<ImageMsg>
     {
         private static byte[] s_ScratchSpace;
         [SerializeField] private RenderTexture depthRenderTexture;

@@ -4,7 +4,7 @@ using Unity.Robotics.ROSTCPConnector.MessageGeneration;
 
 namespace Sim.Sensors.Vision
 {
-    public class CameraInfo : IROSSensor<CameraInfoMsg>
+    public class CameraInfo : ROSSensorBase<CameraInfoMsg>
     {
         private Camera sensorCamera;
 
