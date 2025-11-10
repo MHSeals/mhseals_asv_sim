@@ -1,78 +1,80 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Diagnostics;
+using Sim.Physics.Water.Statics;
+using Sim.Physics.Water.Dynamics;
+using Sim.Utils;
 
-public class WindForce : MonoBehaviour
+namespace Sim.Physics.Wind
 {
-
-    public Wind wind;
-    public Rigidbody rb;
-    public Mesh mesh;
-    public bool debug;
-
-    private Vector3[] verts;
-    private Vector3 windVector;
-    private Vector3[] normals;
-
-    private int[] tris;
-    private int numTris;
-    private Vector3 totalWindForce;
-    private Buoyancy buoyancy;
-    private KernerDynamics kernerDynamics;
-
-
-    private void Start()
+    [RequireComponent(typeof(Buoyancy))]
+    [RequireComponent(typeof(KernerDynamics))]
+    public class WindForce : MonoBehaviour
     {
-        verts = mesh.vertices;
-        tris = mesh.triangles;
-        normals = mesh.normals;
-        numTris = tris.Length / 3;
-        windVector = new Vector3(-wind.speed * Mathf.Sin(wind.direction), 0, wind.speed * Mathf.Cos(wind.direction));
-        buoyancy = GetComponent<Buoyancy>();
-        kernerDynamics = GetComponent<KernerDynamics>();
-    }
+        public Wind wind;
+        public Rigidbody rb;
+        public Mesh mesh;
+        public bool debug;
 
-    private void FixedUpdate()
-    {
-        totalWindForce = Vector3.zero;
-        windVector = new Vector3(-wind.speed * Mathf.Sin(wind.direction), 0, wind.speed * Mathf.Cos(wind.direction));
+        private Vector3[] verts;
+        private Vector3 windVector;
+        private Vector3[] normals;
 
-        for (int i = 0; i < numTris; i++)
+        private int[] tris;
+        private int numTris;
+        private Vector3 totalWindForce;
+        private Buoyancy buoyancy;
+        private KernerDynamics kernerDynamics;
+
+
+        private void Start()
         {
-            Vector3[] triangle = new Vector3[3] {
-                verts[tris[(i * 3) + 0]],
-                verts[tris[(i * 3) + 1]],
-                verts[tris[(i * 3) + 2]]
-            };
+            verts = mesh.vertices;
+            tris = mesh.triangles;
+            normals = mesh.normals;
+            numTris = tris.Length / 3;
+            windVector = new Vector3(-wind.speed * Mathf.Sin(wind.direction), 0, wind.speed * Mathf.Cos(wind.direction));
+            buoyancy = GetComponent<Buoyancy>();
+            kernerDynamics = GetComponent<KernerDynamics>();
+        }
 
-            Vector3 triangleCenter = (triangle[0] + triangle[1] + triangle[2]) / 3;
-            Vector3 triangleNormal = WaterInteraction.Utils.GetFaceNormal(triangle[0], triangle[1], triangle[2]);
-            float triangleArea = triangleNormal.magnitude;
+        private void FixedUpdate()
+        {
+            totalWindForce = Vector3.zero;
+            windVector = new Vector3(-wind.speed * Mathf.Sin(wind.direction), 0, wind.speed * Mathf.Cos(wind.direction));
 
-            Vector3 triangleCenterWorld = transform.TransformPoint(triangleCenter);
-            Vector3 triangleNormalWorld = transform.TransformDirection(triangleNormal);
-
-            if (Vector3.Dot(windVector, triangleNormalWorld) < 0)
+            for (int i = 0; i < numTris; i++)
             {
-                Vector3 force = windVector * (-Vector3.Dot(windVector.normalized, triangleNormalWorld.normalized) * triangleArea);
-                totalWindForce += force;
-                rb.AddForceAtPosition(force, triangleCenterWorld);
+                Vector3[] triangle = new Vector3[3] {
+                    verts[tris[(i * 3) + 0]],
+                    verts[tris[(i * 3) + 1]],
+                    verts[tris[(i * 3) + 2]]
+                };
 
+                Vector3 triangleCenter = (triangle[0] + triangle[1] + triangle[2]) / 3;
+                Vector3 triangleNormal = CommonUtils.GetFaceNormal(triangle[0], triangle[1], triangle[2]);
+                float triangleArea = triangleNormal.magnitude;
+
+                Vector3 triangleCenterWorld = transform.TransformPoint(triangleCenter);
+                Vector3 triangleNormalWorld = transform.TransformDirection(triangleNormal);
+
+                if (Vector3.Dot(windVector, triangleNormalWorld) < 0)
+                {
+                    Vector3 force = windVector * (-Vector3.Dot(windVector.normalized, triangleNormalWorld.normalized) * triangleArea);
+                    totalWindForce += force;
+                    rb.AddForceAtPosition(force, triangleCenterWorld);
+
+                    if (debug)
+                    {
+                        Debug.DrawRay(triangleCenterWorld, force);
+                    }
+                }
                 if (debug)
                 {
-                    Debug.DrawRay(triangleCenterWorld, force);
+                    //Debug.DrawRay(Vector3.zero, windVector, Color.red);
                 }
             }
-            if (debug)
-            {
-                //Debug.DrawRay(Vector3.zero, windVector, Color.red);
-            }
-        }
-        //rb.AddForce(totalWindForce);
-        //Debug.DrawRay(transform.position, totalWindForce/100);
+            //rb.AddForce(totalWindForce);
+            //Debug.DrawRay(transform.position, totalWindForce/100);
 
+        }
     }
 }

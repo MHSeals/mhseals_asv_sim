@@ -1,10 +1,41 @@
 using UnityEngine;
 using System;
+using Sim.Utils;
 
 // TODO: Investigate if transforms could be optimized by using a single transform for all submerged objects
 
-namespace WaterInteraction
+namespace Sim.Physics.Processing
 {
+    public static class SubmersionUtils
+    {
+        public static float[] CalculateTriangleAreas(Data data)
+        {
+            int triangleCount = data.maxTriangleIndex / 3;
+            float[] triangleAreas = data.triangleAreas;
+
+            for (int i = 0; i < data.maxTriangleIndex; i += 3)
+            {
+                Vector3 v1 = data.vertices[data.triangles[i + 1]] - data.vertices[data.triangles[i]];
+                Vector3 v2 = data.vertices[data.triangles[i + 2]] - data.vertices[data.triangles[i]];
+                float area = 0.5f * Vector3.Cross(v1, v2).magnitude;
+                triangleAreas[i / 3] = area;
+            }
+            return triangleAreas;
+        }
+
+
+        public static void DrawPatch(Patch patch)
+        {
+            int[] triangles = patch.baseGridMesh.triangles;
+            Vector3[] vertices = patch.patchVertices;
+            for (var i = 0; i < triangles.Length; i += 3)
+            {
+                Vector3[] tri = new Vector3[] { vertices[triangles[i]], vertices[triangles[i + 1]], vertices[triangles[i + 2]] };
+                CommonUtils.DebugDrawTriangle(tri, Color.red);
+            }
+        }
+    }
+
     /// Class holding the vertices, triangles and normals of the submerged mesh, and more.
     public class Data
     {
@@ -171,7 +202,7 @@ namespace WaterInteraction
             float[] areas = data.triangleAreas;
             for (int i = 0; i < data.maxTriangleIndex - 2; i += 3)
             {
-                Vector3 normal = Utils.GetFaceNormal(vertices[i], vertices[i + 1], vertices[i + 2]);
+                Vector3 normal = CommonUtils.GetFaceNormal(vertices[i], vertices[i + 1], vertices[i + 2]);
                 areas[i / 3] = normal.magnitude;
             }
             return areas;
@@ -377,15 +408,13 @@ namespace WaterInteraction
             b = temp;
         }
     }
+
+    // Old variable names with new:
+    // LJ_H = intersectPointLowToHigh
+    // LJ_M = intersectPointLowToMid
+    // J_H = newEdgeLowToHigh
+    // J_M = newEdgeLowToMid
+
+    // LI_L = interpolatedLengthLowToHigh
+    // LI_M = interpolatedLengthMidToHigh
 }
-
-
-// Old variable names with new:
-// LJ_H = intersectPointLowToHigh
-// LJ_M = intersectPointLowToMid
-// J_H = newEdgeLowToHigh
-// J_M = newEdgeLowToMid
-
-// LI_L = interpolatedLengthLowToHigh
-// LI_M = interpolatedLengthMidToHigh
-

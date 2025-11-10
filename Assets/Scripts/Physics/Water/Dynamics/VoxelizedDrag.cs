@@ -1,9 +1,9 @@
 using UnityEngine;
-using WaterInteraction;
+using Sim.Utils;
 
 // TODO: Implement damping, critical damping
 
-namespace Physics.Water.Dynamics
+namespace Sim.Physics.Water.Dynamics
 {
     public class VoxelizedDrag
     {

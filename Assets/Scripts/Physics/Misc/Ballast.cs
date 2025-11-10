@@ -1,19 +1,22 @@
 using UnityEngine;
 
-public class Ballast : MonoBehaviour
+// Utility script for creating an offset child rigidbody force (not useful for articulation bodies which solve based on child position)
+namespace Sim.Physics.Misc
 {
-    [SerializeField] private float mass = 30.0f;
-    private Rigidbody rb;
-    const float g = 9.8067f;
-    // Start is called before the first frame update
-    private void Start()
+    public class Ballast : MonoBehaviour
     {
-        rb = GetComponentInParent<Rigidbody>();
-    }
+        [SerializeField] private float mass = 30.0f;
+        private Rigidbody rb;
+        const float g = 9.8067f;
 
-    // Update is called once per frame
-    private void FixedUpdate()
-    {
-        rb.AddForceAtPosition(Vector3.down * g * mass, transform.position);
+        private void Start()
+        {
+            rb = GetComponentInParent<Rigidbody>();
+        }
+
+        private void FixedUpdate()
+        {
+            rb.AddForceAtPosition(Vector3.down * g * mass, transform.position);
+        }
     }
 }

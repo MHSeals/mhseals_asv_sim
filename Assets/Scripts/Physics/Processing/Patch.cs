@@ -7,7 +7,7 @@ using Unity.Jobs;
 using System;
 
 
-namespace WaterInteraction
+namespace Sim.Physics.Processing
 {
     public class Patch
     {
