@@ -4,27 +4,27 @@ using UnityEngine;
 using System;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
+using Sim.Utils.ROS;
 
 namespace Sim.Sensors.Vision {
     [RequireComponent(typeof(Camera))]
-    public class ROSDepthCameraAsync : ROSSensorBase<ImageMsg> {
+    public class ROSDepthCameraAsync : MonoBehaviour, IROSSensor<ImageMsg> {
         private static byte[] s_ScratchSpace;
+
         [SerializeField] private RenderTexture depthRenderTexture;
+
+        [field: SerializeField] public string topicName { get; set; } = "camera/depth";
+        [field: SerializeField] public string frameId { get; set; } = "camera_link_optical_frame";
+        [field: SerializeField] public float Hz { get; set; } = 15.0f;
+        public ROSPublisher<ImageMsg> publisher { get; set; }
 
         private CustomPassVolume customPassVolume;
         private CameraDepthBake depthBakePass = new();
         private Camera cam;
         private Texture2D depthTex2D;
+        private float timeSincePublish = 0.0f;
 
-        protected override void SetSensorDefaults() {
-            if (string.IsNullOrEmpty(topicName)) topicName = "camera/depth";
-            if (string.IsNullOrEmpty(frameId)) frameId = "camera_link_optical_frame";
-            if (Hz == 0.0f) Hz = 15.0f;
-        }
-
-        protected override void Start() {
-            base.Start();
-
+        private void Start() {
             cam = GetComponent<Camera>();
             customPassVolume = gameObject.AddComponent<CustomPassVolume>();
             customPassVolume.injectionPoint = CustomPassInjectionPoint.AfterPostProcess;
@@ -32,14 +32,19 @@ namespace Sim.Sensors.Vision {
             depthBakePass.bakingCamera = cam;
             depthBakePass.depthTexture = depthRenderTexture;
             customPassVolume.customPasses.Add(depthBakePass);
+
+            if (publisher == null)
+                publisher = gameObject.AddComponent<ROSPublisher<ImageMsg>>();
+
+            publisher.Initialize(topicName, frameId, CreateMessage, Hz);
         }
 
-        protected override ImageMsg CreateSensorMessage() {
-            return GetDepthImageMsg(depthTex2D, CreateHeader());
+        public ImageMsg CreateMessage() {
+            return GetDepthImageMsg(depthTex2D, ROSPublisher<ImageMsg>.CreateHeader(frameId));
         }
 
-        private void Update() {
-            timeSincePublish += Time.deltaTime;
+        private void FixedUpdate() {
+            timeSincePublish += Time.fixedDeltaTime;
             if (timeSincePublish > 1.0f / Hz) {
                 RequestReadback(depthRenderTexture);
                 timeSincePublish = 0.0f;
@@ -62,10 +67,12 @@ namespace Sim.Sensors.Vision {
 
             depthTex2D.LoadRawTextureData(request.GetData<byte>());
             depthTex2D.Apply();
-            if (publishData) ros.Publish(topicName, CreateSensorMessage());
+
+            // Publish via ROSPublisher
+            if (publisher != null) publisher.Publish();
         }
 
-        ImageMsg GetDepthImageMsg(Texture2D tex, HeaderMsg header) {
+        private ImageMsg GetDepthImageMsg(Texture2D tex, HeaderMsg header) {
             byte[] data = null;
             string encoding = "32FC1";
             int step = 4 * tex.width;

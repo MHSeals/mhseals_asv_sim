@@ -18,26 +18,24 @@ namespace Sim.Actuators.Motors {
 
     public abstract class MotorBase<TConfig> : MonoBehaviour where TConfig : IMotorConfig, new() {
         [SerializeReference] protected TConfig config;
+        [SerializeField] protected bool useDebugCommand;
+        [SerializeField] protected float debugCommand;
         protected GameObject motorJoint;
         protected float maxTorque, maxAngularVelocity, torqueK, minAngle, maxAngle, maxAngularAcceleration, inertiaAlongAxis;
         protected MotorControlMode controlMode;
         protected Axis rotationAxis;
         protected Pid pid;
-        protected Vector3 worldAxis;
+        protected Vector3 worldAxis, localAxis;
         protected IPhysicsBody body;
         protected float command;
-
-        public float Command {
-            get => command;
-            set => command = value;
-        }
+        protected float torqueOutput;
 
         protected virtual void SetMotorDefaults() {
             motorJoint = gameObject;
 
             controlMode = config.controlMode;
             rotationAxis = config.rotationAxis;
-            pid = config.pid;
+            pid = config.pid?.Clone();
             maxTorque = config.maxTorque;
             torqueK = config.torqueK;
             maxAngularVelocity = config.maxAngularVelocity;
@@ -72,21 +70,24 @@ namespace Sim.Actuators.Motors {
             if (motorJoint == null)
                 throw new MissingReferenceException($"{name}: motorJoint is not assigned.");
 
-            Vector3 axisVector = rotationAxis switch {
+            localAxis = rotationAxis switch {
                 Axis.X => Vector3.right,
                 Axis.Y => Vector3.up,
                 Axis.Z => Vector3.forward,
                 _ => Vector3.up
             };
 
-            inertiaAlongAxis = Vector3.Dot(axisVector, body.inertiaTensorRotation * Vector3.Scale(body.inertiaTensor, axisVector));
+            inertiaAlongAxis = Vector3.Dot(localAxis, body.inertiaTensorRotation * Vector3.Scale(body.inertiaTensor, localAxis));
             maxAngularAcceleration = maxTorque / inertiaAlongAxis;
-
             body.maxAngularVelocity = maxAngularVelocity;
-            worldAxis = motorJoint.transform.TransformDirection(axisVector);
+
+            torqueOutput = 0;
         }
 
         protected virtual void FixedUpdate() {
+            command = useDebugCommand ? debugCommand : command;
+            worldAxis = motorJoint.transform.TransformDirection(localAxis);
+
             switch (controlMode) {
                 case MotorControlMode.Torque:
                     ApplyTorqueControl(command);
@@ -106,14 +107,10 @@ namespace Sim.Actuators.Motors {
             // Smooth torque application using torqueK to simplify external factors slowing torque (near instant)
             torque = Mathf.Clamp(torque, -maxTorque, maxTorque);
 
-            float torqueOutput = Mathf.MoveTowards(
-                GetTorque(),
-                torque,
-                maxTorque * torqueK * Time.deltaTime
-            );
-
             if (controlMode != MotorControlMode.Position)
                 IsAtLimit(ref torque);
+
+            torqueOutput = Mathf.Lerp(torqueOutput, torque, 1 - Mathf.Pow(1 - torqueK, Time.deltaTime * 60f));
 
             body.AddTorque(worldAxis * torqueOutput);
         }
@@ -129,6 +126,8 @@ namespace Sim.Actuators.Motors {
 
         // Uses Pid controller for manual control (would have to be implemented in our code normally)
         protected virtual void ApplyPositionControl(float targetAngle) {
+            if (pid == null) return;
+
             targetAngle = Mathf.Clamp(targetAngle, minAngle, maxAngle);
             float currentAngle = GetAngle();
             float angleError = Mathf.DeltaAngle(currentAngle, targetAngle);
@@ -146,9 +145,10 @@ namespace Sim.Actuators.Motors {
                 _ => v.y
             };
 
-        protected virtual float GetVelocity() => GetAlongAxis(body.angularVelocity, rotationAxis);
+        protected virtual float GetVelocity() => GetAlongAxis(body.transform.InverseTransformDirection(body.angularVelocity), rotationAxis);
         protected virtual float GetAngle() => GetAlongAxis(motorJoint.transform.localEulerAngles, rotationAxis);
-        protected virtual float GetTorque() => GetAlongAxis(body.GetAccumulatedTorque(), rotationAxis);
+        protected virtual float GetCommand() => command;
+        protected virtual float SetCommand(float command) => this.command = command;
 
         protected virtual bool IsAtLimit(ref float command) {
             float currentAngle = GetAngle();

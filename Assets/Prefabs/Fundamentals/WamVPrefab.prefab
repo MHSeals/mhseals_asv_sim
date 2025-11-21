@@ -44,10 +44,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 360f33ed38c668c49a2b8bc7c68dade4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: scan
-  frameId: lidar_link
-  publishData: 1
-  Hz: 5
   minAngleDegrees: -180
   maxAngleDegrees: 180
   angleIncrementDegrees: 0.045
@@ -181,6 +177,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MotorsAssembly::Sim.Actuators.Motors.GenericMotor
   config: {fileID: 11400000, guid: 5967f194d88ec50c2ab07a30fcc49b4f, type: 2}
+  useDebugCommand: 0
+  debugCommand: 0
 --- !u!1 &2634701924049440580
 GameObject:
   m_ObjectHideFlags: 0
@@ -403,6 +401,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7006649626684828070}
+  - component: {fileID: 6283742258053083546}
   - component: {fileID: 7844370930396143298}
   m_Layer: 0
   m_Name: Odometer
@@ -426,6 +425,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7159653098705972070}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &6283742258053083546
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4763628532308725642}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &7844370930396143298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,10 +464,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9df38af7e86ab454b9023f4f0b477177, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: odometry
-  frameId: odom
-  publishData: 1
-  Hz: 50
 --- !u!1 &4925392913000111281
 GameObject:
   m_ObjectHideFlags: 0
@@ -516,6 +538,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MotorsAssembly::Sim.Actuators.Motors.GenericMotor
   config: {fileID: 11400000, guid: 5967f194d88ec50c2ab07a30fcc49b4f, type: 2}
+  useDebugCommand: 0
+  debugCommand: 0
 --- !u!1 &5239215981664146113
 GameObject:
   m_ObjectHideFlags: 0
@@ -561,10 +585,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ea4339cbf971ef49821d367c0176a97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: imu/raw
-  frameId: imu_link
-  publishData: 1
-  Hz: 50
 --- !u!54 &6903488400512635533
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -855,10 +875,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 760503290fcf4b14496695479586f03d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: camera/image_raw
-  frameId: camera_link_optical_frame
-  publishData: 1
-  Hz: 20
   rgbRenderTexture: {fileID: 8400000, guid: edcd97a8adf9d9a4a9bae5ff41fa20c7, type: 2}
 --- !u!114 &5260162572555375355
 MonoBehaviour:
@@ -872,10 +888,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 322bb92736373db4e805daeb4dfe07c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: camera/depth
-  frameId: camera_link_optical_frame
-  publishData: 1
-  Hz: 20
   depthRenderTexture: {fileID: 8400000, guid: 53de5ec294fbae041ad325683dfe6bca, type: 2}
 --- !u!114 &6480773819702900677
 MonoBehaviour:
@@ -889,10 +901,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7176e5b19304af4abef5f25ebc64ee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topicName: camera/camera_info
-  frameId: camera_link_optical_frame
-  publishData: 1
-  Hz: 5
 --- !u!114 &7425569542785440312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1049,6 +1057,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MotorsAssembly::Sim.Actuators.Motors.GenericMotor
   config: {fileID: 11400000, guid: 5967f194d88ec50c2ab07a30fcc49b4f, type: 2}
+  useDebugCommand: 0
+  debugCommand: 0
 --- !u!1 &6490864095461255724
 GameObject:
   m_ObjectHideFlags: 0
@@ -1459,6 +1469,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MotorsAssembly::Sim.Actuators.Motors.GenericMotor
   config: {fileID: 11400000, guid: 5967f194d88ec50c2ab07a30fcc49b4f, type: 2}
+  useDebugCommand: 0
+  debugCommand: 0
 --- !u!1 &8786718910907320599
 GameObject:
   m_ObjectHideFlags: 0

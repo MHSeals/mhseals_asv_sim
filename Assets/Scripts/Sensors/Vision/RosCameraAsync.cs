@@ -2,32 +2,38 @@ using RosMessageTypes.Sensor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Unity.Robotics.ROSTCPConnector.MessageGeneration;
+using Sim.Utils.ROS;
 
 namespace Sim.Sensors.Vision {
     [RequireComponent(typeof(Camera))]
-    public class ROSCameraAsync : ROSSensorBase<ImageMsg> {
+    public class ROSCameraAsync : MonoBehaviour, IROSSensor<ImageMsg> {
         [SerializeField] private RenderTexture rgbRenderTexture;
+
+        [field: SerializeField] public string topicName { get; set; } = "camera/image_raw";
+        [field: SerializeField] public string frameId { get; set; } = "camera_link_optical_frame";
+        [field: SerializeField] public float Hz { get; set; } = 15.0f;
+        public ROSPublisher<ImageMsg> publisher { get; set; }
+
         private Camera sensorCamera;
         private Texture2D rgbTexture2D;
+        private float timeSincePublish = 0.0f;
 
-        protected override void SetSensorDefaults() {
-            if (string.IsNullOrEmpty(topicName)) topicName = "camera/image_raw";
-            if (string.IsNullOrEmpty(frameId)) frameId = "camera_link_optical_frame";
-            if (Hz == 0.0f) Hz = 15.0f;
-        }
-
-        protected override void Start() {
-            base.Start();
-            sensorCamera = gameObject.GetComponent<Camera>();
+        private void Start() {
+            sensorCamera = GetComponent<Camera>();
             sensorCamera.targetTexture = rgbRenderTexture;
+
+            if (publisher == null)
+                publisher = gameObject.AddComponent<ROSPublisher<ImageMsg>>();
+
+            publisher.Initialize(topicName, frameId, CreateMessage, Hz);
         }
 
-        protected override ImageMsg CreateSensorMessage() {
-            return rgbTexture2D.ToImageMsg(CreateHeader());
+        public ImageMsg CreateMessage() {
+            return rgbTexture2D.ToImageMsg(ROSPublisher<ImageMsg>.CreateHeader(frameId));
         }
 
-        private void Update() {
-            timeSincePublish += Time.deltaTime;
+        private void FixedUpdate() {
+            timeSincePublish += Time.fixedDeltaTime;
             if (timeSincePublish > 1.0f / Hz) {
                 RequestReadback(rgbRenderTexture);
                 timeSincePublish = 0.0f;
@@ -51,8 +57,7 @@ namespace Sim.Sensors.Vision {
             rgbTexture2D.LoadRawTextureData(request.GetData<byte>());
             rgbTexture2D.Apply();
 
-            if (publishData) ros.Publish(topicName, CreateSensorMessage());
+            if (publisher != null) publisher.Publish();
         }
-
     }
 }

@@ -2,46 +2,61 @@ using UnityEngine;
 using RosMessageTypes.Nav;
 using RosMessageTypes.Geometry;
 using Unity.Robotics.ROSTCPConnector.ROSGeometry;
+using Sim.Utils;
+using Sim.Utils.ROS;
 
 namespace Sim.Sensors.Nav {
-    public class Odom : ROSSensorBase<OdometryMsg> {
-        private Rigidbody odomBody;
+    public class Odom : MonoBehaviour, IROSSensor<OdometryMsg> {
+        [field: SerializeField] public string topicName { get; set; } = "odometry";
+        [field: SerializeField] public string frameId { get; set; } = "odom";
+        [field: SerializeField] public float Hz { get; set; } = 50.0f;
+        public ROSPublisher<OdometryMsg> publisher { get; set; }
 
-        protected override void SetSensorDefaults() {
-            if (string.IsNullOrEmpty(topicName)) topicName = "odometry";
-            if (string.IsNullOrEmpty(frameId)) frameId = "odom";
-            if (Hz == 0.0f) Hz = 50.0f;
+        private IPhysicsBody body;
+
+        void OnValidate() {
+            if (GetComponent<Rigidbody>() == null && GetComponent<ArticulationBody>() == null)
+                Debug.LogWarning($"{name} should have either a Rigidbody or an ArticulationBody attached.");
         }
 
-        protected override void Start() {
-            base.Start();
-            odomBody = gameObject.GetComponent<Rigidbody>();
+        void Awake() {
+            var rb = GetComponent<Rigidbody>();
+            var ab = GetComponent<ArticulationBody>();
+
+            if (rb != null) body = new RigidbodyAdapter(rb);
+            else if (ab != null) body = new ArticulationBodyAdapter(ab);
+            else throw new MissingComponentException($"{name} requires a Rigidbody or ArticulationBody!");
         }
 
-        protected override OdometryMsg CreateSensorMessage() {
+        public OdometryMsg CreateMessage() {
             OdometryMsg msg = new();
+
             Vector3 pos = transform.position;
-            msg.pose.pose.position = new PointMsg() {
+            msg.pose.pose.position = new PointMsg {
                 x = pos.z,
                 y = -pos.x,
                 z = pos.y
             };
 
-            msg.pose.pose.orientation = odomBody.transform.rotation.To<FLU>();
+            msg.pose.pose.orientation = body.transform.rotation.To<FLU>();
 
-            Vector3 localVel = transform.InverseTransformDirection(odomBody.linearVelocity);
+            Vector3 localVel = transform.InverseTransformDirection(body.linearVelocity);
             msg.twist.twist.linear.x = localVel.z;
             msg.twist.twist.linear.y = -localVel.x;
             msg.twist.twist.linear.z = localVel.y;
-            msg.twist.twist.angular.z = -odomBody.angularVelocity.y;
 
-            msg.header = CreateHeader();
+            msg.twist.twist.angular.x = 0;
+            msg.twist.twist.angular.y = 0;
+            msg.twist.twist.angular.z = -body.angularVelocity.y;
+
+            msg.header = ROSPublisher<OdometryMsg>.CreateHeader(frameId);
 
             return msg;
         }
 
-        private void Update() {
-            UpdatePublish();
+        void Start() {
+            if (publisher == null) publisher = gameObject.AddComponent<ROSPublisher<OdometryMsg>>();
+            publisher.Initialize(topicName, frameId, CreateMessage, Hz);
         }
     }
 }

@@ -12,9 +12,7 @@ GameObject:
   - component: {fileID: 5736649073140790843}
   - component: {fileID: 5351059515992611189}
   - component: {fileID: 8962017540601137766}
-  - component: {fileID: 4233766557225322807}
-  - component: {fileID: 5336710078512534045}
-  - component: {fileID: 8710327177618217579}
+  - component: {fileID: 6219842708732668629}
   m_Layer: 0
   m_Name: YellowBuoyPrefab
   m_TagString: Untagged
@@ -30,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2706708281802863379}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.47, y: -0.91874695, z: -5.19}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 1
@@ -115,34 +113,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &4233766557225322807
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2706708281802863379}
-  serializedVersion: 5
-  m_Mass: 10
-  m_LinearDamping: 5
-  m_AngularDamping: 2
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
---- !u!114 &5336710078512534045
+--- !u!114 &6219842708732668629
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -151,26 +122,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 2706708281802863379}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a0e152a37064894bd0d24c9527e4b66, type: 3}
+  m_Script: {fileID: 11500000, guid: 7a1da9821099ff289a21c0b07fc9f839, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PhysicsAssembly::Submersion
-  waterSurface: {fileID: 0}
-  simplifiedMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
-  patchSize: 10
-  patchResolution: 4
-  drawPatch: 0
-  drawSubmerged: 0
---- !u!114 &8710327177618217579
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2706708281802863379}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1708da91d5bb00a4383848e791ae536b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PhysicsAssembly::Buoyancy
-  buoyancyForceActive: 1
-  useArticulationBody: 0
+  m_EditorClassIdentifier: PhysicsAssembly::Sim.Physics.Misc.SimpleFloat
+  targetSurface: {fileID: 0}
+  includeDeformers: 1
+  useRotation: 0
+  verticalOffset: 0.08
+  followWaterCurrent: 0
+  currentSpeedMultiplier: 1
+  length: 1
+  width: 1
+  showGizmos: 0
+  positionLerpSpeed: 5
+  rotationLerpSpeed: 2
+  useRigidbodyForCollision: 0
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 0

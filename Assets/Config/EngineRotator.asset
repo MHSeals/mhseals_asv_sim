@@ -16,11 +16,11 @@ MonoBehaviour:
   <rotationAxis>k__BackingField: 1
   <pid>k__BackingField:
     Kp: 0.8
-    Ki: 0
+    Ki: 0.05
     Kd: 1
-    bound: 0
+    bound: 600
   <maxTorque>k__BackingField: 60
   <maxAngularVelocity>k__BackingField: 2
   <torqueK>k__BackingField: 1
-  <minAngle>k__BackingField: -90
-  <maxAngle>k__BackingField: 90
+  <minAngle>k__BackingField: -50
+  <maxAngle>k__BackingField: 50

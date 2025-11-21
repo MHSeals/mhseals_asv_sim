@@ -23,5 +23,8 @@ namespace Sim.Utils {
             integral = Mathf.Clamp(integral, -bound, bound);
             return Kp * error + Ki * integral + Kd * change;
         }
+
+        public Pid Clone() =>
+            new(Kp, Ki, Kd);
     }
 }

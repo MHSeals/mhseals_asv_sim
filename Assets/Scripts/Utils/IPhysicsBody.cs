@@ -4,6 +4,7 @@ namespace Sim.Utils {
     public interface IPhysicsBody {
         Vector3 position { get; set; }
         Quaternion rotation { get; set; }
+        Transform transform { get; }
         Vector3 linearVelocity { get; set; }
         Vector3 angularVelocity { get; set; }
         Vector3 inertiaTensor { get; set; }

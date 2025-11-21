@@ -2,9 +2,10 @@ using RosMessageTypes.Sensor;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using Sim.Utils.ROS;
 
 namespace Sim.Sensors.Lidar {
-    public class Lidar2D : ROSSensorBase<LaserScanMsg> {
+    public class Lidar2D : MonoBehaviour, IROSSensor<LaserScanMsg> {
         [SerializeField] private float minAngleDegrees = -45.0f;
         [SerializeField] private float maxAngleDegrees = 45.0f;
         [SerializeField] private float angleIncrementDegrees = 1.0f;
@@ -12,31 +13,30 @@ namespace Sim.Sensors.Lidar {
         [SerializeField] private float maxRange = 50.0f;
         [SerializeField] private int batchSize = 500;
         [SerializeField] private bool drawRays = false;
-        // private Vector3 transformScale;
+
+        [field: SerializeField] public string topicName { get; set; } = "scan";
+        [field: SerializeField] public string frameId { get; set; } = "lidar_link";
+        [field: SerializeField] public float Hz { get; set; } = 5.0f;
+        public ROSPublisher<LaserScanMsg> publisher { get; set; }
+
         private Vector3[] scanDirVectors;
 
-        protected override void SetSensorDefaults() {
-            if (string.IsNullOrEmpty(topicName)) topicName = "scan";
-            if (string.IsNullOrEmpty(frameId)) frameId = "lidar_link";
-            if (Hz == 0.0f) Hz = 5.0f;
-        }
+        private void Start() {
+            // Create publisher if it doesn't exist
+            if (publisher == null)
+                publisher = gameObject.AddComponent<ROSPublisher<LaserScanMsg>>();
 
-        protected override void Start() {
-            base.Start();
+            publisher.Initialize(topicName, frameId, CreateMessage, Hz);
+
             scanDirVectors = GenerateScanVectors();
         }
 
-        protected override LaserScanMsg CreateSensorMessage() {
+        public LaserScanMsg CreateMessage() {
             // transformScale = transform.lossyScale;
             scanDirVectors = GenerateScanVectors();
             float[] dists = PerformScan(scanDirVectors);
             return DistancesToLaserscan(dists);
         }
-
-        private void FixedUpdate() {
-            UpdatePublish();
-        }
-
 
         private Vector3[] GenerateScanVectors() {
             int numBeams = (int)((maxAngleDegrees - minAngleDegrees) / (angleIncrementDegrees));
@@ -53,7 +53,6 @@ namespace Sim.Sensors.Lidar {
             }
             return scanVectors;
         }
-
 
         private float[] PerformScan(Vector3[] dirs) {
             int numPoints = dirs.Length;
@@ -91,7 +90,7 @@ namespace Sim.Sensors.Lidar {
 
         private LaserScanMsg DistancesToLaserscan(float[] dists) {
             LaserScanMsg msg = new() {
-                header = CreateHeader(),
+                header = ROSPublisher<LaserScanMsg>.CreateHeader(frameId),
 
                 angle_min = minAngleDegrees * Mathf.Deg2Rad,
                 angle_max = maxAngleDegrees * Mathf.Deg2Rad,

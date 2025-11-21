@@ -62,5 +62,7 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "ms-dotnettools.csdevkit",
     "editor.suggest.showReferences": true,
-    "dotnet.codeLens.enableReferencesCodeLens": false
+    "dotnet.codeLens.enableReferencesCodeLens": false,
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.formatOnType": true
 }

@@ -7,53 +7,49 @@ using Sim.Utils.ROS;
 using UnityEngine;
 
 namespace Sim.Sensors.Lidar {
-    public class Lidar3D : ROSSensorBase<PointCloud2Msg> {
+    public class Lidar3D : MonoBehaviour, IROSSensor<PointCloud2Msg> {
         [SerializeField, Range(0.1f, 200.0f)] private float maxRange = 100.0f;
         [SerializeField, Range(0, 5000)] private int numHorizontalBeams = 500;
-
-
         [SerializeField, Range(0, 16)] private int numVerticalBeams = 16;
         [SerializeField, Range(0.1f, 5.0f)] private float minDistance = 0.3f;
-
         [SerializeField, Range(0.0f, 2.0f * Mathf.PI)] private float horizontalFOV = 60.0f * Mathf.PI;
         [SerializeField, Range(0.0f, Mathf.PI)] private float verticalFOV = 0.5f * Mathf.PI;
-
         [SerializeField] private int batchSize = 500;
-
-        // [SerializeField, Range(0.0f, 20.0f)] private float noisePercentage = 5.0f;
         [SerializeField] private bool drawRays = true;
+
+        [field: SerializeField] public string topicName { get; set; } = "points";
+        [field: SerializeField] public string frameId { get; set; } = "lidar_link";
+        [field: SerializeField] public float Hz { get; set; } = 10.0f;
+        public ROSPublisher<PointCloud2Msg> publisher { get; set; }
 
         private Vector3[] scanDirVectors;
         private Transform transformCache;
         private Vector3 transformScale;
 
-
         private float[] scanPatternParams;
         private float[] scanPatternParamsPrev;
 
-        protected override void SetSensorDefaults() {
-            if (string.IsNullOrEmpty(topicName)) topicName = "points";
-            if (string.IsNullOrEmpty(frameId)) frameId = "lidar_link";
-            if (Hz == 0.0f) Hz = 10.0f;
-        }
+        private void Start() {
+            if (publisher == null)
+                publisher = gameObject.AddComponent<ROSPublisher<PointCloud2Msg>>();
 
-        protected override void Start() {
-            base.Start();
+            publisher.Initialize(topicName, frameId, CreateMessage, Hz);
+
             scanDirVectors = GenerateScanVectors();
             scanPatternParamsPrev = new float[4];
         }
 
         private void FixedUpdate() {
-            //dont re-calculate lidar scan vectors if parameters unchanged
+            // dont re-calculate lidar scan vectors if parameters unchanged
             scanPatternParams = new[] { numHorizontalBeams, numVerticalBeams, horizontalFOV, verticalFOV };
             if (scanPatternParams != scanPatternParamsPrev) {
                 scanDirVectors = GenerateScanVectors();
             }
             transformCache = transform;
-            UpdatePublish();
+            // ROSPublisher handles publishing internally, so no extra UpdatePublish() needed
         }
 
-        protected override PointCloud2Msg CreateSensorMessage() {
+        public PointCloud2Msg CreateMessage() {
             transformScale = transform.lossyScale;
             Vector3[] points = PerformScan(scanDirVectors);
             PointCloud2Msg msg = PointsToPointCloud2(points);
@@ -61,9 +57,7 @@ namespace Sim.Sensors.Lidar {
             return msg;
         }
 
-
         private Vector3[] GenerateScanVectors() {
-
             float fidelityHorizontal = horizontalFOV / numHorizontalBeams;
             float fidelityVertical = verticalFOV / numVerticalBeams;
 
@@ -85,7 +79,6 @@ namespace Sim.Sensors.Lidar {
             }
             return scanVectors;
         }
-
 
         private Vector3[] PerformScan(Vector3[] dirs) {
             int numPoints = dirs.Length;
@@ -125,7 +118,7 @@ namespace Sim.Sensors.Lidar {
 
         private PointCloud2Msg PointsToPointCloud2(Vector3[] points) {
             PointCloud2Msg msg = new PointCloud2Msg();
-            msg.header = CreateHeader();
+            msg.header = ROSPublisher<PointCloud2Msg>.CreateHeader(frameId);
 
             // publishing as unordered cloud (height = 1). might reconsider later, idk.
             msg.height = 1;
