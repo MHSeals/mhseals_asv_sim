@@ -145,10 +145,23 @@ namespace Sim.Actuators.Motors {
                 _ => v.y
             };
 
-        protected virtual float GetVelocity() => GetAlongAxis(body.transform.InverseTransformDirection(body.angularVelocity), rotationAxis);
-        protected virtual float GetAngle() => GetAlongAxis(motorJoint.transform.localEulerAngles, rotationAxis);
-        protected virtual float GetCommand() => command;
-        protected virtual float SetCommand(float command) => this.command = command;
+        public virtual float GetVelocity() => GetAlongAxis(body.transform.InverseTransformDirection(body.angularVelocity), rotationAxis);
+        public virtual float GetAngle() => GetAlongAxis(motorJoint.transform.localEulerAngles, rotationAxis);
+        public virtual float GetCommand() => command;
+        public virtual float SetCommand(float command) => this.command = command;
+        public virtual TConfig GetConfig() => config;
+        public virtual float GetMaxCommand() => config.controlMode switch {
+            MotorControlMode.Torque => config.maxTorque,
+            MotorControlMode.Velocity => config.maxAngularVelocity,
+            MotorControlMode.Position => config.maxAngle,
+            _ => 0.0f
+        };
+        public virtual float GetMinCommand() => config.controlMode switch {
+            MotorControlMode.Torque => -config.maxTorque,
+            MotorControlMode.Velocity => -config.maxAngularVelocity,
+            MotorControlMode.Position => config.minAngle,
+            _ => 0.0f
+        };
 
         protected virtual bool IsAtLimit(ref float command) {
             float currentAngle = GetAngle();

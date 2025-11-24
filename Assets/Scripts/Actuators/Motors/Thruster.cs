@@ -25,7 +25,7 @@ namespace Sim.Actuators.Motors {
             else if (parentAb != null) rootBody = new ArticulationBodyAdapter(parentAb);
             else rootBody = body;
         }
-        
+
         protected override void FixedUpdate() {
             base.FixedUpdate();
 
@@ -40,7 +40,10 @@ namespace Sim.Actuators.Motors {
             force *= submersionFraction;
             rootBody.AddForceAtPosition(force, body.transform.position);
 
-            if(debug) Debug.DrawLine(body.position, body.position + force, Color.red, Time.fixedDeltaTime);
+            if (debug) Debug.DrawLine(body.position, body.position + force, Color.red, Time.fixedDeltaTime);
         }
+        
+        public float GetMaxThrust() => config.GetMaxThrust();
+        public float GetMaxBackThrust() => config.GetMaxBackThrust();
     }
 }
