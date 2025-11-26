@@ -2,18 +2,24 @@ using UnityEngine;
 
 namespace Sim.Utils {
     public class VisualizeCenterOfMass : MonoBehaviour {
+        [SerializeField, Range(1.0f, 10.0f)] float visualRadius = 0.05f;
+        [SerializeField] bool drawGizmo = true;
         private IPhysicsBody body;
     
         private void OnDrawGizmos() {
-            var rb = GetComponent<Rigidbody>();
-            var ab = GetComponent<ArticulationBody>();
+            if (!drawGizmo) return;
+
+            if (body == null) {
+                var rb = GetComponent<Rigidbody>();
+                var ab = GetComponent<ArticulationBody>();
     
-            if (rb != null) body = new RigidbodyAdapter(rb);
-            else if (ab != null) body = new ArticulationBodyAdapter(ab);
-            else throw new MissingComponentException($"{name} requires a Rigidbody or ArticulationBody!");
+                if (rb != null) body = new RigidbodyAdapter(rb);
+                else if (ab != null) body = new ArticulationBodyAdapter(ab);
+                else throw new MissingComponentException($"{name} requires a Rigidbody or ArticulationBody!");
+            }
 
             Gizmos.color = Color.red;
-            Gizmos.DrawSphere(transform.TransformPoint(body.centerOfMass), 0.05f);
+            Gizmos.DrawSphere(transform.TransformPoint(body.centerOfMass), visualRadius);
         }
     }
 }

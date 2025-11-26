@@ -57,33 +57,37 @@ namespace Sim.Physics.Misc {
         void LateUpdate() {
             if (targetSurface == null) return;
 
+            // For moving objects in editor
+            smoothedPosition.x = transform.position.x;
+            smoothedPosition.z = transform.position.z;
+            
             // Sampling points around the boat
             if (useRotation) {
                 Vector3 localBow = transform.forward * (length / 2f);
                 Vector3 localStern = -transform.forward * (length / 2f);
                 Vector3 localLeft = -transform.right * (width / 2f);
                 Vector3 localRight = transform.right * (width / 2f);
-    
+
                 Vector3 worldBow = transform.position + localBow;
                 Vector3 worldStern = transform.position + localStern;
                 Vector3 worldLeft = transform.position + localLeft;
                 Vector3 worldRight = transform.position + localRight;
-    
+
                 float hBow = GetWaterHeight(worldBow);
                 float hStern = GetWaterHeight(worldStern);
                 float hLeft = GetWaterHeight(worldLeft);
                 float hRight = GetWaterHeight(worldRight);
-           
+
                 Vector3 adjustedBow = new(worldBow.x, hBow, worldBow.z);
                 Vector3 adjustedStern = new(worldStern.x, hStern, worldStern.z);
                 Vector3 adjustedLeft = new(worldLeft.x, hLeft, worldLeft.z);
                 Vector3 adjustedRight = new(worldRight.x, hRight, worldRight.z);
-    
+
                 // Directions and water normal
                 Vector3 forwardDir = (adjustedBow - adjustedStern).normalized;
                 Vector3 rightDir = (adjustedRight - adjustedLeft).normalized;
                 Vector3 waterNormal = Vector3.Cross(forwardDir, rightDir).normalized;
-               
+
                 float avgHeight = (hBow + hStern + hLeft + hRight) / 4f;
                 smoothedPosition.y = Mathf.Lerp(smoothedPosition.y, avgHeight + verticalOffset, positionLerpSpeed * Time.deltaTime);
                 smoothedRotation = Quaternion.Slerp(smoothedRotation, Quaternion.FromToRotation(transform.up, waterNormal) * transform.rotation, rotationLerpSpeed * Time.deltaTime);
