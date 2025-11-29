@@ -5,29 +5,41 @@ using Sim.Utils;
 
 namespace Sim.Physics.Water.Dynamics {
     public class FossenDynamics : MonoBehaviour {
-        public bool Damping = true;
-        public bool AddedMass = true;
-        public bool Coriolis = true;
+        [Header("Features")]
+        [SerializeField] private bool Damping = true;
+        [SerializeField] private bool AddedMass = true;
+        [SerializeField] private bool Coriolis = true;
 
-        public float XdotU = 5.0f;
-        public float YdotV = 5.0f;
-        public float ZdotW = 0.1f;
-        public float KdotP = 0.0f;
-        public float MdotQ = 0.0f;
-        public float NdotR = 0.1f;
+        [Header("Added mass force derivative terms proportional to acceleration (kg)")]
+        [SerializeField, Tooltip("Surge")] private float XdotU = 6.0f;
+        [SerializeField, Tooltip("Sway")] private float YdotV = 8.0f;
+        [SerializeField, Tooltip("Heave")] private float ZdotW = 2.0f;
 
-        public float Xu = 100.0f;
-        public float Xuu = 150.0f;
-        public float Yv = 100.0f;
-        public float Yvv = 100.0f;
-        public float Zw = 500.0f;
-        public float Zww = 0.0f;
-        public float Kp = 300.0f;
-        public float Kpp = 600.0f;
-        public float Mq = 900.0f;
-        public float Mqq = 900.0f;
-        public float Nr = 800.0f;
-        public float Nrr = 800.0f;
+        [Header("Added mass moment derivative terms proportional to acceleration (kgm^2)")]
+        [SerializeField, Tooltip("Roll")] private float KdotP = 0.15f;
+        [SerializeField, Tooltip("Pitch")] private float MdotQ = 0.25f;
+        [SerializeField, Tooltip("Yaw")] private float NdotR = 0.35f;
+
+        [Header("Linear damping movement coefficients (Ns/m)")]
+        [SerializeField, Tooltip("Surge")] private float Xu = 30.0f;
+        [SerializeField, Tooltip("Sway")] private float Yv = 40.0f;
+        [SerializeField, Tooltip("Heave")] private float Zw = 150.0f;
+
+        [Header("Linear damping rotational coefficients (Nms/rad)")]
+        [SerializeField, Tooltip("Roll")] private float Kp = 8.0f;
+        [SerializeField, Tooltip("Pitch")] private float Mq = 12.0f;
+        [SerializeField, Tooltip("Yaw")] private float Nr = 20.0f;
+
+        [Header("Quadratic damping linear coefficients (Ns^2/m^2)")]
+        [SerializeField, Tooltip("Surge")] private float Xuu = 25.0f;
+        [SerializeField, Tooltip("Sway")] private float Yvv = 35.0f;
+        [SerializeField, Tooltip("Heave")] private float Zww = 40.0f;
+
+        [Header("Quadratic damping rotational coefficients (Nms^2/rad^2)")]
+        [SerializeField, Tooltip("Roll")] private float Kpp = 3.0f;
+        [SerializeField, Tooltip("Pitch")] private float Mqq = 6.0f;
+        [SerializeField, Tooltip("Yaw")] private float Nrr = 30.0f;
+
         private const int nStates = 6;
         private float[,] Cor = new float[nStates, nStates];
         private float[,] Ma = new float[nStates, nStates];
@@ -59,12 +71,12 @@ namespace Sim.Physics.Water.Dynamics {
             Ma[3, 3] = KdotP;
             Ma[4, 4] = MdotQ;
             Ma[5, 5] = NdotR;
-            state = getState();
+            state = GetState();
         }
 
         private void FixedUpdate() {
-            state = getState();
-            stateDot = getStateDot(state, statePrev, Time.deltaTime);
+            state = GetState();
+            stateDot = GetStateDot(state, statePrev, Time.deltaTime);
             Cor = CalculateCoriolisMatrix(state);
             D = CalculateDampingMatrix(state);
 
@@ -88,7 +100,7 @@ namespace Sim.Physics.Water.Dynamics {
             Array.Copy(state, statePrev, nStates);
         }
 
-        private float[] getState() {
+        private float[] GetState() {
             float[] eta = state;
             Vector3 worldVelocity = body.linearVelocity;
             Vector3<FLU> localVelocity = transform.InverseTransformDirection(worldVelocity).To<FLU>();
@@ -104,7 +116,7 @@ namespace Sim.Physics.Water.Dynamics {
             return eta;
         }
 
-        private float[] getStateDot(float[] currentState, float[] previousState, float dt) {
+        private float[] GetStateDot(float[] currentState, float[] previousState, float dt) {
             float[] retStateDot = new float[6];
             for (var i = 0; i < nStates; i++) {
                 retStateDot[i] = (currentState[i] - previousState[i]) / dt;
